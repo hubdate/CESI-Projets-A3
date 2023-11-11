@@ -50,32 +50,34 @@ La mise en place du tunnel VPN entre le siège social et le site de Lyon vise à
 
 
 ### Configuration
-- **Protocole VPN :** IPsec
-- **Phases de Négociation :** Phase 1 et Phase 2
+```
+Protocole VPN : IPsec
+Phases de Négociation : Phase 1 et Phase 2
 
-#### Phase 1 (Négotiation Principale)
-- **Algorithme de Chiffrement :** AES-256
-- **Méthode de Hachage :** SHA-256
-- **Groupe DH (Diffie-Hellman) :** Groupe 14 (2048 bits)
-- **Durée de vie :** 28800 secondes
-- **DPD (Détection de Chute de Tunnels) :**
-    - **Activation :** Oui
-    - **Intervalle :** 10 secondes
-    - **Essais avant l'échec :** 5 essais
-
-
-#### Phase 2 (Négotiation Principale)
-- **Protocole :** ESP 
-- **Algorithme de Chiffrement :** AES-256
-- **Méthode de Hachage :** SHA-256
-- **Groupe de Clés PSF (Perfect Forward Secrecy) :** Groupe 14 (2048 bits)
-- **Durée de Vie :** 3600 secondes
-- **Keep Alive :** Activé
+Phase 1 (Négotiation Principale)
+    - Algorithme de Chiffrement : AES-256
+    - Méthode de Hachage : SHA-256
+    - Groupe DH (Diffie-Hellman) : Groupe 14 (2048 bits)
+    - Durée de vie : 28800 secondes
+    - DPD (Détection de Chute de Tunnels) :
+        - Activation : Oui
+        - Intervalle : 10 secondes
+        - Essais avant l'échec : 5 essais
 
 
-#### Authentification
-- **Méthode :** Clé partagée
-- **Clé partagée :** 0ddda55d3a4af6f8a739a6f3483f9f2a4f8e69cf32aadaf4a3b41049
+Phase 2 (Négotiation Principale)
+    - Protocole : ESP 
+    - Algorithme de Chiffrement : AES-256
+    - Méthode de Hachage : SHA-256
+    - Groupe de Clés PSF (Perfect Forward Secrecy) : Groupe 14 (2048 bits)
+    - Durée de Vie : 3600 secondes
+    - Keep Alive : Activé
+
+
+Authentification
+    - Méthode : Clé partagée
+    - Clé partagée : 0ddda55d3a4af6f8a739a6f3483f9f2a4f8e69cf32aadaf4a3b41049
+```
 
 ### Évolutivité et Modifications du Tunnel VPN
 Cette section vise à mettre en lumière la capacité du tunnel VPN à évoluer en fonction des besoins changeants de l'entreprise et à intégrer des modifications sans compromettre la stabilité du système.
