@@ -6,6 +6,36 @@ Le choix de la conteneurisation plutôt que de la vritualisation repose sur plus
 
 De plus, la conteneurisation offre une grande flexibilité, permettant non seulement une utilisation plus efficiente des ressources système, des temps de démarrage plus rapides, mais également la possibilité de créer rapidement de nouveaux conteneurs pour répartir la charge en cas de besoin. Cette capacité dynamique à ajuster la capacité selon les exigences spécifiques de chaque service garantit une réponse agile aux variations de charge et une utilisation optimale des ressources disponibles
 
+
+### Plateforme de Conteneurisation
+Au sein de l'infrastructure du Système d'Information d'ABSTERGO, la technologie de conteneurisation Docker a été sélectionner en tant que plateforme principale. Il est agréable de noté que, Docker est reconnu pour sa facilité d'utilisation, sa portabilité ainsi que son écosystème riche de conteneurs prêts à l'emploi. Son architecture légère et efficace en faisait un choix idéal, offrant une gestion simplifiée des conteneurs tout en assurant une isolation robuste.
+
+### Services Conteneurisés
+Dans le cadre de la migration vers l'infrastructure actuelle, nous avons reconduit plusieurs services présent au sein de l'ancienne architecture. Parmis ces services nous recensons les suivants : 
+
+- **Le système ERP (Enterprise Ressource Plannning), Dolibarr.**
+
+    La conteneurisation de Dolibarr a été privilégiée pour moderniser la gestion des opérations métier. Une approche modulaire a été adoptée à l'aide de Docker Compose. **Toutefois, il est important de noter que la base de données MariaDB n'est pas stockée dans le conteneur Docker, mais dans un emplacement externe. Cette configuration a été délibérément choisie pour simplifier la gestion du conteneur, tout en préservant l'intégrité des données en cas de suppression ou de modification du conteneur.** Cette stratégie garantit une séparation claire entre l'application Dolibarr et ses données sous-jacentes, facilitant ainsi la sauvegarde, la restauration et la gestion globale du Progiciel de Gestion Intégré (PGI / ERP).
+
+    De plus l'adoption de cette nouvelle architecture conteneurisée garantit un environnement isolé et adaptable. Les avantages englobent un déploiement rapide des services, une maintenance simplifiée et une gestion efficace des dépendances entre les composants. Cette orientation renforce la stabilité et la disponibilité de l'ERP tout en simplifiant les ajustements ou évolutions futures de l'infrastructure.
+
+- **L'Autocommutateur téléphonique privé (PBX), Asterisk.**
+
+    La conteneurisation d'Asterisk a été choisie afin de regrouper de manière centralisée plusieurs services connexes. Parallèlement, cette décision a permis l'intégration des services PrivateDial, WebSMS et AutoBan au sein du même conteneur. Comme précedement, cette approche modulaire, orchestrée par Docker Compose, offre le flexibilité nécessaire pour faire coexister et interagir intelligement l'ensemble de ces services au sein du même environement.
+
+    **En revanche il convient de souligner que les données d'Asterisk, comprenant la configuration et les enregistrements, sont délibérément stockées à l'extérieur du conteneur Docker, dans un emplacement dédié. Cette approche, identique à celle choisie pour la conteneurisation de Dolibarr, a pour objectif de simplifier la gestion du conteneur tout en préservant l'intégrité des données en cas de modifications ou de suppression du conteneur.** La séparation distincte entre l'application Asterisk et ses données sous-jacentes facilite ainsi les opérations de sauvegarde, de restauration et de gestion globale du système de communication.
+
+    Cette approche permet, ainsi le déploiement d'un solution modulaire, s'occupant des différents services associés aux systèmes de PBX IP et aux passerelles VoIP. Par ailleurs cette encapsulation permet l'ajout ou le retrait de service similaire, assurant une adaptabilité continue aux besoins évolutifs d'ABSTERGO.
+    
+### Utilisation de Portainer
+Pour simplifier la gestion et favoriser l'intégration harmonieuse des conteneurs actuels et futurs, nous avons opté pour Portainer. Portainer est une interface utilisateur centralisée, largement populaire, qui offre une visualisation claires des conteneurs, images, volumes et réseaux. En complément de Docker, Portainer permet une prise en main facilitée des ressources Docker sur le serveur, évitant ainsi la nécessité d'utiliser des commandes complexes.
+
+Cette combinaison simplifie l'administration des applications et services conteneurisés, facilitant la surveillance, la gestion et l'ajustement des ressources en fonction des besoins spécifiques.
+
+Il est possible d'accéder à Portainer à l'adresse suivante
+```
+https://srv-dbn-02.abstergo.internal:9443
+```
 ## Tunneling VPN
 Afin d'assurer une communication sécurisée et fiable entre le siège social et le site de Lyon, a été décidé la mise en place d'une solution de tunneling VPN (Vitrual Private Network). Permettant ainsi une connexion cryptée entre les deux sites, garantissant la confidentialité et l'intégrité des données échangées.
 
