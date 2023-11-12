@@ -1,8 +1,17 @@
+Documentation technique de l'infrastructure du Système d'Information
+====================================================================
+
+Bienvenu
+
 # Sommaire
 - [Coeur du Réseau](#coeur-du-réseau)
     - [Existant](#existant)
         - [Site du Siège Social](#site-du-siège-social)
+            - [Plan d'adressage, réseau local (LAN)](#plan-dadressage-réseau-local-lan)
+            - [Plan d'adressage, zone démilitarisée (DMZ)](#plan-dadressage-zone-démilitarisée-dmz)
         - [Site de Lyon](#site-de-lyon)
+            - [Plan d'adressage, réseau local (LAN)](#plan-dadressage-rc3a9seau-local-lan-1)
+            - [Plan d'adressage, zone démilitarisée (DMZ)](#plan-dadressage-zone-dc3a9militarisc3a9e-dmz-1)
     - [Politique de sécurité](#politique-de-sécurité)
         - [Pare-feu](#pare-feu)
         - [Translation d'Adresse](#translation-dadresse)
@@ -10,19 +19,15 @@
         - [Serveur Mandataire de Transmission, Proxy](#serveur-mandataire-de-transmission-proxy)
         - [Serveur Mandataire de Redirection,  Reverse Proxy](#serveur-mandataire-de-redirection-reverse-proxy)
     - [Tunneling VPN](#tunneling-vpn)
-
-
-
-
-- [Physique](#physique)
+- [Orchestration des Services](#orchestration-des-services)
+    - [Serveur de Supervision](#serveur-de-supervision)
+        - [Ajout d'un hôte](#ajout-dun-hôte)
     - [Serveur de Conteneurisation](#serveur-de-conteneurisation)
         - [Plateforme de Conteneurisation](#plateforme-de-conteneurisation)
         - [Services Conteneurisés](#services-conteneurisés)
         - [Utilisation de Portainer](#utilisation-de-portainer)
     - [Serveur Active Directory](#serveur-de-conteneurisation)
     - [Serveur DNS](#serveur-de-conteneurisation)
-    - [Serveur de Supervision](#serveur-de-supervision)
-        - [Ajout d'un hôte](#ajout-dun-hôte)
     - [Administration](#administration)
         - [Management](#management)
             - [Scripts](#scripts)
@@ -38,10 +43,65 @@
 ## Existant
 ![](./src/overall_abstergo_network.png)
 
-### Site du Siège Social
+| Nom du Réseau | Nombre d'hôtes souhaités | Nombre d'hôtes disponnibles | Nombre d'IP restantes | CIDR | Masque | Adresse Réseau | Plage utilisable | Addresse de diffusion | Paserelle |
+|---------------|--------------------------|-----------------------------|-----------------------|------|--------|----------------|------------------|-----------------------|-----------|
+| **Abstergo HQ - LAN**   | 89 | 253 | 164 | /24 | 255.255.255.0 | 192.168.25.0  | 192.168.25.1  - 192.168.25.253  | 192.168.25.255  | 192.168.25.1  |
+| **Abstergo HQ - DMZ**   |  2 | 253 | 251 | /24 | 255.255.255.0 | 192.168.50.0  | 192.168.50.1  - 192.168.50.253  | 192.168.50.255  | 192.168.50.1  |
+| **Abstergo Lyon - LAN** | 16 | 253 | 237 | /24 | 255.255.255.0 | 192.168.25.0  | 192.168.25.1  - 192.168.25.253  | 192.168.25.255  | 192.168.25.1  |
+| **Abstergo Lyon - DMZ** |    | 253 | 253 | /24 | 255.255.255.0 | 192.168.100.0 | 192.168.100.1 - 192.168.100.253 | 192.168.100.255 | 192.168.100.1 |
+
+## Site du Siège Social
 ![](./src/abstergo_headquarters_network.drawio.png)
-### Site de Lyon
+
+### Plan d'adressage, réseau local (LAN)
+| Libellé                    | Nom du service / équipement | Adresse IPv4 / masque | Interface / Port |
+|----------------------------|-----------------------------|-----------------------|-----------------|
+| **Matériels réseaux**      |                             |                       |                  |
+|                            | Routeur, Pare-feu, Serveur Proxy | **🌐 85.51.94.49, adresse publique fournise par le FAI**      | em0 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.25.1 / 255.255.255.0                                  | em1 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.50.1 / 255.255.255.0                                  | em2 |
+| **Serveurs**               |                             |                       |                  |
+|                            | SRV-WIN-01                       | 192.168.25.2 / 255.255.255.0   | Ethernet0 |
+|                            | SRV-WIN-02                       | 192.168.25.3 / 255.255.255.0   | Ethernet0 |
+|                            | SRV-WIN-01                       | 192.168.25.2 / 255.255.255.0   | Ethernet0 |
+|                            | SRV-DBN-01                       | 192.168.25.2 / 255.255.255.0   | ens33     |
+| **Postes Clients**         |                             |                       |                  |
+|                            | WIN-10-001                       | 192.168.25.129 / 255.255.255.0 | Ethernet0 |
+
+### Plan d'adressage, zone démilitarisée (DMZ)
+| Libellé                    | Nom du service / équipement | Adresse IPv4 / masque | Interface / Port |
+|----------------------------|-----------------------------|-----------------------|-----------------|
+| **Matériels réseaux**      |                             |                       |                  |
+|                            | Routeur, Pare-feu, Serveur Proxy | **🌐 85.51.94.49, adresse publique fournise par le FAI**      | em0 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.25.1 / 255.255.255.0                                  | em1 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.50.1 / 255.255.255.0                                  | em2 |
+| **Serveurs**               |                             |                       |                  |
+|                            | SRV-DBN-02                       | 192.168.50.2 / 255.255.255.0   | ens33     |
+
+
+
+## Site de Lyon
 ![](./src/abstergo_lyon_network.drawio.png)
+
+### Plan d'adressage, réseau local (LAN)
+| Libellé                    | Nom du service / équipement | Adresse IPv4 / masque | Interface / Port |
+|----------------------------|-----------------------------|-----------------------|-----------------|
+| **Matériels réseaux**      |                             |                       |                  |
+|                            | Routeur, Pare-feu, Serveur Proxy | **🌐 93.157.27.65, adresse publique fournise par le FAI**      | em0 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.75.1 / 255.255.255.0                                   | em1 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.100.1 / 255.255.255.0                                  | em2 |
+| **Serveurs**               |                             |                       |                  |
+|                            | SRV-WIN-03                       | 192.168.75.2 / 255.255.255.0   | Ethernet0 |
+| **Postes Clients**         |                             |                       |                  |
+|                            | WIN-10-002                       | 192.168.25.152 / 255.255.255.0 | Ethernet0 |
+
+### Plan d'adressage, zone démilitarisée (DMZ)
+| Libellé                    | Nom du service / équipement | Adresse IPv4 / masque | Interface / Port |
+|----------------------------|-----------------------------|-----------------------|-----------------|
+| **Matériels réseaux**      |                             |                       |                  |
+|                            | Routeur, Pare-feu, Serveur Proxy | **🌐 93.157.27.65, adresse publique fournise par le FAI**      | em0 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.75.1 / 255.255.255.0                                   | em1 |
+|                            | Routeur, Pare-feu, Serveur Proxy | 192.168.100.1 / 255.255.255.0                                  | em2 |
 
 ## Politique de sécurité
 
@@ -210,50 +270,7 @@ Cette section vise à mettre en lumière la capacité du tunnel VPN à évoluer 
 
 
 
-# Physique
-
-## Serveur de Conteneurisation
-L'infrastructure du Système d'Information d'ABSTERGO, intègre un serveur spécifiquement dédié à la conteneurisation. Cette décision stratégique, découle de la volonté d'offrir une solution efficace pour encapsuler, distribuer et exécuter des applications de manière indépendante, permettant par la même occasion une maintenance ainsi qu'un déploiement accéléré.
-
-
-Le choix de la conteneurisation plutôt que de la vritualisation repose sur plusieurs considérations clés, visant à optimiser l'efficacité ainsi que la gestion de l'infrastructure. Contrairement à la virtualisation, qui encapsule un système d'exploitation entier avec ses ressources, la conteneurisation isole uniquement l'application et ses dépendances, partageant le même noyau d'exploitation avec le système hôte.
-
-De plus, la conteneurisation offre une grande flexibilité, permettant non seulement une utilisation plus efficiente des ressources système, des temps de démarrage plus rapides, mais également la possibilité de créer rapidement de nouveaux conteneurs pour répartir la charge en cas de besoin. Cette capacité dynamique à ajuster la capacité selon les exigences spécifiques de chaque service garantit une réponse agile aux variations de charge et une utilisation optimale des ressources disponibles
-
-
-### Plateforme de Conteneurisation
-Au sein de l'infrastructure du Système d'Information d'ABSTERGO, la technologie de conteneurisation Docker a été sélectionner en tant que plateforme principale. Il est agréable de noté que, Docker est reconnu pour sa facilité d'utilisation, sa portabilité ainsi que son écosystème riche de conteneurs prêts à l'emploi. Son architecture légère et efficace en faisait un choix idéal, offrant une gestion simplifiée des conteneurs tout en assurant une isolation robuste.
-
-### Services Conteneurisés
-Dans le cadre de la migration vers l'infrastructure actuelle, nous avons reconduit plusieurs services présent au sein de l'ancienne architecture. Parmis ces services nous recensons les suivants : 
-
-- **Le système ERP (Enterprise Ressource Plannning), Dolibarr.**
-
-    La conteneurisation de Dolibarr a été privilégiée pour moderniser la gestion des opérations métier. Une approche modulaire a été adoptée à l'aide de Docker Compose. **Toutefois, il est important de noter que la base de données MariaDB n'est pas stockée dans le conteneur Docker, mais dans un emplacement externe. Cette configuration a été délibérément choisie pour simplifier la gestion du conteneur, tout en préservant l'intégrité des données en cas de suppression ou de modification du conteneur.** Cette stratégie garantit une séparation claire entre l'application Dolibarr et ses données sous-jacentes, facilitant ainsi la sauvegarde, la restauration et la gestion globale du Progiciel de Gestion Intégré (PGI / ERP).
-
-    De plus l'adoption de cette nouvelle architecture conteneurisée garantit un environnement isolé et adaptable. Les avantages englobent un déploiement rapide des services, une maintenance simplifiée et une gestion efficace des dépendances entre les composants. Cette orientation renforce la stabilité et la disponibilité de l'ERP tout en simplifiant les ajustements ou évolutions futures de l'infrastructure.
-
-- **L'Autocommutateur téléphonique privé (PBX), Asterisk.**
-
-    La conteneurisation d'Asterisk a été choisie afin de regrouper de manière centralisée plusieurs services connexes. Parallèlement, cette décision a permis l'intégration des services PrivateDial, WebSMS et AutoBan au sein du même conteneur. Comme précedement, cette approche modulaire, orchestrée par Docker Compose, offre le flexibilité nécessaire pour faire coexister et interagir intelligement l'ensemble de ces services au sein du même environement.
-
-    **En revanche il convient de souligner que les données d'Asterisk, comprenant la configuration et les enregistrements, sont délibérément stockées à l'extérieur du conteneur Docker, dans un emplacement dédié. Cette approche, identique à celle choisie pour la conteneurisation de Dolibarr, a pour objectif de simplifier la gestion du conteneur tout en préservant l'intégrité des données en cas de modifications ou de suppression du conteneur.** La séparation distincte entre l'application Asterisk et ses données sous-jacentes facilite ainsi les opérations de sauvegarde, de restauration et de gestion globale du système de communication.
-
-    Cette approche permet, ainsi le déploiement d'un solution modulaire, s'occupant des différents services associés aux systèmes de PBX IP et aux passerelles VoIP. Par ailleurs cette encapsulation permet l'ajout ou le retrait de service similaire, assurant une adaptabilité continue aux besoins évolutifs d'ABSTERGO.
-    
-### Utilisation de Portainer
-Pour simplifier la gestion et favoriser l'intégration harmonieuse des conteneurs actuels et futurs, nous avons opté pour Portainer. Portainer est une interface utilisateur centralisée, largement populaire, qui offre une visualisation claires des conteneurs, images, volumes et réseaux. En complément de Docker, Portainer permet une prise en main facilitée des ressources Docker sur le serveur, évitant ainsi la nécessité d'utiliser des commandes complexes.
-
-Cette combinaison simplifie l'administration des applications et services conteneurisés, facilitant la surveillance, la gestion et l'ajustement des ressources en fonction des besoins spécifiques.
-
-**Le conteneur Portainer est accessible à l'adresse suivante**
-```
-https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre le port)
-```
-
-## Serveur Active Directory
-
-## Serveur DNS
+# Orchestration des Services
 
 ## Serveur de Supervision
 Dans le cadre de la refonte du Système d'Information présent à ABSTERGO, a été décidé le déploiement d'un serveur de supervision. Cette solution jugée essentielle permet de suivre en temps réel l'évolution du Système d'Information. Cette solution offre donc la possibilité de détecter rapidement les anomalies, de prévenit d'éventuelles pasnnes, et d'assurer la stabilité continue des services.
@@ -319,11 +336,57 @@ EOT
 ) | bash -s SITENAME HOSTNAME
 ```
 
+
+## Serveur de Conteneurisation
+L'infrastructure du Système d'Information d'ABSTERGO, intègre un serveur spécifiquement dédié à la conteneurisation. Cette décision stratégique, découle de la volonté d'offrir une solution efficace pour encapsuler, distribuer et exécuter des applications de manière indépendante, permettant par la même occasion une maintenance ainsi qu'un déploiement accéléré.
+
+
+Le choix de la conteneurisation plutôt que de la vritualisation repose sur plusieurs considérations clés, visant à optimiser l'efficacité ainsi que la gestion de l'infrastructure. Contrairement à la virtualisation, qui encapsule un système d'exploitation entier avec ses ressources, la conteneurisation isole uniquement l'application et ses dépendances, partageant le même noyau d'exploitation avec le système hôte.
+
+De plus, la conteneurisation offre une grande flexibilité, permettant non seulement une utilisation plus efficiente des ressources système, des temps de démarrage plus rapides, mais également la possibilité de créer rapidement de nouveaux conteneurs pour répartir la charge en cas de besoin. Cette capacité dynamique à ajuster la capacité selon les exigences spécifiques de chaque service garantit une réponse agile aux variations de charge et une utilisation optimale des ressources disponibles
+
+
+### Plateforme de Conteneurisation
+Au sein de l'infrastructure du Système d'Information d'ABSTERGO, la technologie de conteneurisation Docker a été sélectionner en tant que plateforme principale. Il est agréable de noté que, Docker est reconnu pour sa facilité d'utilisation, sa portabilité ainsi que son écosystème riche de conteneurs prêts à l'emploi. Son architecture légère et efficace en faisait un choix idéal, offrant une gestion simplifiée des conteneurs tout en assurant une isolation robuste.
+
+### Services Conteneurisés
+Dans le cadre de la migration vers l'infrastructure actuelle, nous avons reconduit plusieurs services présent au sein de l'ancienne architecture. Parmis ces services nous recensons les suivants : 
+
+- **Le système ERP (Enterprise Ressource Plannning), Dolibarr.**
+
+    La conteneurisation de Dolibarr a été privilégiée pour moderniser la gestion des opérations métier. Une approche modulaire a été adoptée à l'aide de Docker Compose. **Toutefois, il est important de noter que la base de données MariaDB n'est pas stockée dans le conteneur Docker, mais dans un emplacement externe. Cette configuration a été délibérément choisie pour simplifier la gestion du conteneur, tout en préservant l'intégrité des données en cas de suppression ou de modification du conteneur.** Cette stratégie garantit une séparation claire entre l'application Dolibarr et ses données sous-jacentes, facilitant ainsi la sauvegarde, la restauration et la gestion globale du Progiciel de Gestion Intégré (PGI / ERP).
+
+    De plus l'adoption de cette nouvelle architecture conteneurisée garantit un environnement isolé et adaptable. Les avantages englobent un déploiement rapide des services, une maintenance simplifiée et une gestion efficace des dépendances entre les composants. Cette orientation renforce la stabilité et la disponibilité de l'ERP tout en simplifiant les ajustements ou évolutions futures de l'infrastructure.
+
+- **L'Autocommutateur téléphonique privé (PBX), Asterisk.**
+
+    La conteneurisation d'Asterisk a été choisie afin de regrouper de manière centralisée plusieurs services connexes. Parallèlement, cette décision a permis l'intégration des services PrivateDial, WebSMS et AutoBan au sein du même conteneur. Comme précedement, cette approche modulaire, orchestrée par Docker Compose, offre le flexibilité nécessaire pour faire coexister et interagir intelligement l'ensemble de ces services au sein du même environement.
+
+    **En revanche il convient de souligner que les données d'Asterisk, comprenant la configuration et les enregistrements, sont délibérément stockées à l'extérieur du conteneur Docker, dans un emplacement dédié. Cette approche, identique à celle choisie pour la conteneurisation de Dolibarr, a pour objectif de simplifier la gestion du conteneur tout en préservant l'intégrité des données en cas de modifications ou de suppression du conteneur.** La séparation distincte entre l'application Asterisk et ses données sous-jacentes facilite ainsi les opérations de sauvegarde, de restauration et de gestion globale du système de communication.
+
+    Cette approche permet, ainsi le déploiement d'un solution modulaire, s'occupant des différents services associés aux systèmes de PBX IP et aux passerelles VoIP. Par ailleurs cette encapsulation permet l'ajout ou le retrait de service similaire, assurant une adaptabilité continue aux besoins évolutifs d'ABSTERGO.
+    
+### Utilisation de Portainer
+Pour simplifier la gestion et favoriser l'intégration harmonieuse des conteneurs actuels et futurs, nous avons opté pour Portainer. Portainer est une interface utilisateur centralisée, largement populaire, qui offre une visualisation claires des conteneurs, images, volumes et réseaux. En complément de Docker, Portainer permet une prise en main facilitée des ressources Docker sur le serveur, évitant ainsi la nécessité d'utiliser des commandes complexes.
+
+Cette combinaison simplifie l'administration des applications et services conteneurisés, facilitant la surveillance, la gestion et l'ajustement des ressources en fonction des besoins spécifiques.
+
+**Le conteneur Portainer est accessible à l'adresse suivante**
+```
+https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre le port)
+```
+
+## Serveur Active Directory
+
+## Serveur DNS
+
+
 ## Administration
 ### Management
 #### Scripts
 
 ### Productions de Rapports (Reporting)
 
-###### Auteur : *Titouan BAZIN*. 
 
+
+###### Auteur : *Titouan BAZIN*. 
