@@ -32,9 +32,9 @@ Pour simplifier la gestion et favoriser l'intégration harmonieuse des conteneur
 
 Cette combinaison simplifie l'administration des applications et services conteneurisés, facilitant la surveillance, la gestion et l'ajustement des ressources en fonction des besoins spécifiques.
 
-Il est possible d'accéder à Portainer à l'adresse suivante
+**Le conteneur Portainer est accessible à l'adresse suivante**
 ```
-https://srv-dbn-02.abstergo.internal:9443
+https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre le port)
 ```
 ## Tunneling VPN
 Afin d'assurer une communication sécurisée et fiable entre le siège social et le site de Lyon, a été décidé la mise en place d'une solution de tunneling VPN (Vitrual Private Network). Permettant ainsi une connexion cryptée entre les deux sites, garantissant la confidentialité et l'intégrité des données échangées.
