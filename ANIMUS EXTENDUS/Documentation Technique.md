@@ -101,6 +101,68 @@ Cette combinaison simplifie l'administration des applications et services conten
 ```
 https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre le port)
 ```
+
+## Politique de sécurité
+### Pare-feu
+Cette section est dédiée à la configuration des pare-feu sur les routeurs. Dans le paysage informatique actuel, la sécurité est une priorité absolue. C'est dans cette optique qu'il a été convenu de déployer des pare-feu sur l'ensemble des routeurs présents sur chacun des sites de l'entreprise. Cette initiative vise à établir une "barrière" protégeant notre infrastructure contre les menaces potentielles.
+
+Au cœur de la configuration des pare-feu se trouvent les Listes de Contrôle d'Accès (ACLs), des règles précises régissant le comportement du routeur en fonction du trafic entrant et sortant. Ces ACLs contribuent donc à maintenir un équilibre entre la connectivité nécessaire et la sécurité impérative.
+
+L'environnement informatique étant dynamique, les règles de pare-feu peuvent évoluer en fonction des changements dans l'infrastructure ou de nouvelles politique de sécurité. Cette documentation reflète par conséquence la configuration actuelle, mais gardez à l'esprit que ces règles sont adaptables pour répondre aux nouveaux défis de sécurité tout en préservant une connectivité fluide. 
+
+
+Les Listes de Contrôle d'Accès ci-dessous détaillent la politique de sécurité du pare-feu, déployée sur les différentes interfaces du réseau ABSTERGO. Chaque règle suit le format :
+` [block/allow] [protocol/any] [source] [source port] [destination] [destination port] `
+
+
+**⚠️ Important: Il est important de noter que les règles ACLs actuellement en place sur les pare-feu sont uniformes sur l'ensemble des routeurs déployés sur les différents sites d'ABSTERGO.**
+
+#### _**Interface WAN**_
+```
+# Bloque les réseaux RFC 1918 (adresses IP privées)
+block    any        any        *    10.0.0.0/8        *
+block    any        any        *    172.16.0.0/12     *
+block    any        any        *    192.168.0.0/16    *
+
+# Bloque les plages d'adresses réservées non attribuées par l'IANA
+block    any        any        *    100.64.0.0/10     *
+block    any        any        *    169.254.0.0/16    *
+
+allow    tcp        any        *    WAN.net           22 (SSH)
+allow    tcp        LAN.net    *    any               *
+allow    tcp        any        *    192.168.50.2      80 (HTTP)
+allow    tcp        any        *    192.168.50.2      443 (HTTPS)
+```
+
+#### _**Interface LAN**_
+```
+# Anti-Lockout (par défaut)
+allow    any        any        *    LAN.address       80 (HTTP)
+
+allow    tcp        LAN.net    *    WAN.net           *
+allow    tcp        LAN.net    *    DMZ.net           *
+allow    tcp        LAN.net    *    any               80 (HTTP)
+allow    tcp        LAN.net    *    any               443 (HTTPS)
+allow    tcp/udp    any        *    any               53 (DNS)
+allow    icmp/*     any        *    any               *
+
+# Bloque tout le trafic entrant non autorisé
+block    any        any        *    any               *
+```
+
+#### _**Interface DMZ**_
+```
+# Autorise tout le trafic en provenance de la LAN
+allow    any        LAN.net    *    DMZ.net           *
+
+allow    udp        DMZ.net    *    LAN.net           161 (SNMP)
+allow    tcp        DMZ.net    *    LAN.net           389 (LDAP)
+allow    tcp        DMZ.net    *    LAN.net           6556 (Agent CheckMK)
+
+# Bloque tout le trafic non autorisé, en direction de la LAN 
+block    any        DMZ.net    *    LAN.net           *
+```
+
 ## Tunneling VPN
 Afin d'assurer une communication sécurisée et fiable entre le siège social et le site de Lyon, a été décidé la mise en place d'une solution de tunneling VPN (Vitrual Private Network). Permettant ainsi une connexion cryptée entre les deux sites, garantissant la confidentialité et l'intégrité des données échangées.
 
