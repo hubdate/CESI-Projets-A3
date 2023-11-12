@@ -1,3 +1,68 @@
+### Supervision
+Dans le cadre de la refonte du Système d'Information présent à ABSTERGO, a été décidé le déploiement d'un serveur de supervision. Cette solution jugée essentielle permet de suivre en temps réel l'évolution du Système d'Information. Cette solution offre donc la possibilité de détecter rapidement les anomalies, de prévenit d'éventuelles pasnnes, et d'assurer la stabilité continue des services.
+
+En tant que solution de supervision, notre choix s'est naturellement porté vers CheckMK. Ce logiciel se démarque par son niveau élevé d'automatisation, incluant la découverte automatique des services, la configuration intuitive via une interface graphique, et une gestion intégrée des agents, réduisant ainsi considérablement la charge de travail manuelle. De plus CheckMK offre une couverture exhaustive grâce à une vaste sélection de plugins de surveillance maintenus par les constructeurs.
+
+**Le service CheckMK est accessible à l'adresse suivante**, vous y retrouverez l'ensemble des serveurs présents au sein du siège social mais également au sein du site basé à Lyon. Cela est rendu possible par le biais du tunnel VPN mis en place.
+
+[Pour plus d'information, veuillez vous référer à la section suivante, Tunneling VPN](#tunneling-vpn)
+```
+https://srv-dbn-01.abstergo.internal/abstergo
+```
+
+#### Ajout d'un hôte
+Pour simplifier le processus d'ajout d'hôtes à CheckMK, nous avons développé un script pratique. Ce dernier permet d'automatiser l'ajout d'un hôte en utilisant des paramètres tels que le nom du site et le nom d'hôte. Toutefois, n'oubliez pas que cette tâche peut également être effectuée facilement via l'interface graphique de CheckMK.
+
+Voici le script d'exemple que vous pouvez utiliser :
+```shell
+(
+cat <<EOT
+#!/bin/bash
+
+site=\$1; shift
+hostname=\$1; shift
+
+mk_file="/opt/omd/sites/\$site/etc/check_mk/conf.d/wato/hosts.mk"
+wato_file="\$(dirname \$mk_file)/.wato"
+
+# exit with code 1 if host exists
+(
+cat <<EOT
+GET hosts
+Columns: host_name
+EOT
+) | su - \$site -c "lq" \
+  | grep -q \$hostname
+if [[ \$? == 0 ]]; then
+  echo "\$hostname already added"
+  exit 1
+fi
+
+host \$hostname &> /dev/null
+if [[ \$? != 0 ]]; then
+  echo "\$hostname failed to resolve"
+  exit 1
+fi
+
+# add host to base wato hosts.mk
+cat <<EOT >> \$mk_file
+all_hosts += [ "\$hostname|wato|/" + FOLDER_PATH + "/" ]
+host_attributes.update({'\$hostname': {}})
+EOT
+
+# update num_hosts var for wato
+current_num_hosts=\$( cat \$wato_file | sed -e "s/^.*'num_hosts': //" -e "s/,.*\$//")
+new_num_hosts=\$(( \$current_num_hosts + 1 ))
+sed -i \$wato_file -e "s/'num_hosts': [0-9]\+/'num_hosts': \$new_num_hosts/"
+
+su - \$site -c "cmk -II \$hostname"
+
+exit 0
+EOT
+) | bash -s SITENAME HOSTNAME
+```
+
+
 ## Serveur de Conteneurisation
 L'infrastructure du Système d'Information d'ABSTERGO, intègre un serveur spécifiquement dédié à la conteneurisation. Cette décision stratégique, découle de la volonté d'offrir une solution efficace pour encapsuler, distribuer et exécuter des applications de manière indépendante, permettant par la même occasion une maintenance ainsi qu'un déploiement accéléré.
 
