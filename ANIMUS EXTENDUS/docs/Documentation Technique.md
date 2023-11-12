@@ -32,6 +32,10 @@ Bienvenu
         - [Management](#management)
             - [Scripts](#scripts)
         - [Productions de Rapports (Reporting)](#productions-de-rapports-reporting)
+- [Prestataires et Services Externalisés](#prestataires-et-services-externalisés)
+    - [Plan de Reprise d'Activité](#plan-de-reprise-dactivité)
+    - [Contrat de maintenance](#contrat-de-maintenance)
+    - [Système de Sauvegarde Externalisé](#système-de-sauvegarde-externalisé)
 
 🔎 *Cliquez sur les liens pour accéder directement à la section correspondante.* 🔎
 
@@ -386,6 +390,12 @@ https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre 
 #### Scripts
 
 ### Productions de Rapports (Reporting)
+
+
+# Prestataires et Services Externalisés
+## Plan de Reprise d'Activité
+## Contrat de maintenance
+## Système de Sauvegarde Externalisé
 
 
 
