@@ -101,7 +101,7 @@ Cette combinaison simplifie l'administration des applications et services conten
 ```
 https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre le port)
 ```
-
+# Coeur du Réseau
 ## Politique de sécurité
 ### Pare-feu
 Cette section est dédiée à la configuration des pare-feu sur les routeurs. Dans le paysage informatique actuel, la sécurité est une priorité absolue. C'est dans cette optique qu'il a été convenu de déployer des pare-feu sur l'ensemble des routeurs présents sur chacun des sites de l'entreprise. Cette initiative vise à établir une "barrière" protégeant notre infrastructure contre les menaces potentielles.
