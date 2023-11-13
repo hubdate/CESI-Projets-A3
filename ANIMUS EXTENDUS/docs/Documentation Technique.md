@@ -33,9 +33,8 @@ Bienvenu
             - [Scripts](#scripts)
         - [Productions de Rapports (Reporting)](#productions-de-rapports-reporting)
 - [Prestataires et Services Externalisés](#prestataires-et-services-externalisés)
-    - [Plan de Reprise d'Activité](#plan-de-reprise-dactivité)
-    - [Contrat de maintenance](#contrat-de-maintenance)
-    - [Système de Sauvegarde Externalisé](#système-de-sauvegarde-externalisé)
+    - [Contrat d'infogérance et Plan de Reprise d'Activité (PRA) - NOWTEAMS](#contrat-dinfogérance-et-plan-de-reprise-dactivité-pra---nowteams)
+    - [Contrat de maintenance et Système de Sauvegarde Externalisé - wandesk](#contrat-de-maintenance-et-système-de-sauvegarde-externalisé---wandesk)
 
 🔎 *Cliquez sur les liens pour accéder directement à la section correspondante.* 🔎
 
@@ -393,7 +392,7 @@ https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre 
 
 
 # Prestataires et Services Externalisés
-## Plan de Reprise d'Activité
+## Contrat d'infogérance et Plan de Reprise d'Activité (PRA) - NOWTEAMS
 Actuellement, ABSTERGO explore de nouvelles opportunités pour renforcer davantage la robustesse de son infrastructure. Dans cette optique, nous sommes en phase de négociation avec l'entreprise **NOWTEAMS** en vue de la mise en place d'un contrat d'infogérance complet. Ce partenariat potentiel permettrait d'optimiser la gestion quotidienne de nos systèmes informatiques, offrant une expertise spécialisée et des services adaptés aux besoins spécifiques du Système d'Information.
 
 Parallèlement, nous envisageons sérieusement la mise en œuvre d'un Plan de Reprise d'Activité (PRA) en collaboration avec **NOWTEAMS**. Un tel plan vise à assurer la continuité de nos opérations en cas d'incident majeur, en définissant des procédures efficaces pour la restauration rapide de nos services essentiels.
@@ -403,7 +402,7 @@ Un devis est actuellement en cours de finalisation, et nous sommes confiants que
 [Pour plus d'information, veuillez vous rendre sur le site internet de **NOWTEAMS**](https://www.nowteam.net/)
 
 
-## Contrat de maintenance et Système de Sauvegarde Externalisé
+## Contrat de maintenance et Système de Sauvegarde Externalisé - wandesk
 Dans le cadre de notre engagement envers la stabilité et la disponibilité de l'infrastructure du Système d'Information, a été établit la souscription à un contrat de maintenance et d'infogérance assuré par **wandesk**. Ce contrat permet de bénéficier faire bénéficier à ABSTERGO, d'un support professionnel dédié, assurant la gestion proactive de ses systèmes, la résolution rapide des incidents, ainsi que la mise en place de mises à jour et de correctifs essentiels.
 
 Parallèlement, afin de garantir la sécurité des données et d'assurer une reprise d'activité efficace en cas d'incident, nous avons opté pour une solution de sauvegarde externalisée vers le cloud, assurée par également par **wandesk**. Cette approche offre, tranquillité d'esprit en assurant la sauvegarde régulière des données sensibles dans un environnement distant, conforme aux normes de sécurité les plus strictes.
