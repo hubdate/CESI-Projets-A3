@@ -394,9 +394,14 @@ https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre 
 
 # Prestataires et Services Externalisés
 ## Plan de Reprise d'Activité
-## Contrat de maintenance
-## Système de Sauvegarde Externalisé
 
 
+## Contrat de maintenance et Système de Sauvegarde Externalisé
+Dans le cadre de notre engagement envers la stabilité et la disponibilité de l'infrastructure du Système d'Information, a été établit la souscription à un contrat de maintenance et d'infogérance assuré par **Cloud4Me**. Ce contrat permet de bénéficier faire bénéficier à ABSTERGO, d'un support professionnel dédié, assurant la gestion proactive de ses systèmes, la résolution rapide des incidents, ainsi que la mise en place de mises à jour et de correctifs essentiels.
 
-###### Auteur : *Titouan BAZIN*. 
+Parallèlement, afin de garantir la sécurité des données et d'assurer une reprise d'activité efficace en cas d'incident, nous avons opté pour une solution de sauvegarde externalisée vers le cloud, assurée par également par **Cloud4Me**. Cette approche offre, tranquillité d'esprit en assurant la sauvegarde régulière des données sensibles dans un environnement distant, conforme aux normes de sécurité les plus strictes.
+
+
+[Pour plus d'information, veuillez vous référer au contrat établit précedement avec **Cloud4Me**](../vendors/devis_cloud&contrat_de_maintenace_Cloud4Me.pdf)
+
+###### Auteur : *Titouan BAZIN*.    
