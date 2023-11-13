@@ -40,9 +40,6 @@ Bienvenue
 🔎 *Cliquez sur les liens pour accéder directement à la section correspondante.* 🔎
 
 
-
-
-
 # Coeur du Réseau
 ## Existant
 ![](./src/overall_abstergo_network.png)
