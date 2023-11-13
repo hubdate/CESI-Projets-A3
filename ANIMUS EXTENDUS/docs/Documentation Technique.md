@@ -1,7 +1,7 @@
 Documentation technique de l'infrastructure du Système d'Information
 ====================================================================
 
-Bienvenu
+Bienvenue
 
 # Sommaire
 - [Coeur du Réseau](#coeur-du-réseau)
@@ -19,6 +19,7 @@ Bienvenu
         - [Serveur Mandataire de Transmission, Proxy](#serveur-mandataire-de-transmission-proxy)
         - [Serveur Mandataire de Redirection,  Reverse Proxy](#serveur-mandataire-de-redirection-reverse-proxy)
     - [Tunneling VPN](#tunneling-vpn)
+
 - [Orchestration des Services](#orchestration-des-services)
     - [Serveur de Supervision](#serveur-de-supervision)
         - [Ajout d'un hôte](#ajout-dun-hôte)
@@ -26,12 +27,12 @@ Bienvenu
         - [Plateforme de Conteneurisation](#plateforme-de-conteneurisation)
         - [Services Conteneurisés](#services-conteneurisés)
         - [Utilisation de Portainer](#utilisation-de-portainer)
-    - [Serveur Active Directory](#serveur-de-conteneurisation)
-    - [Serveur DNS](#serveur-de-conteneurisation)
-    - [Administration](#administration)
+    - [Serveur Active Directory](#serveur-active-directory)
+        - [Réplication](#réplication)
+        - [Administration](#administration)
         - [Management](#management)
-            - [Scripts](#scripts)
-        - [Productions de Rapports (Reporting)](#productions-de-rapports-reporting)
+    - [Serveur de Résolution de Nom (DNS)](#serveur-de-résolution-de-nom-dns)
+    
 - [Prestataires et Services Externalisés](#prestataires-et-services-externalisés)
     - [Contrat d'infogérance et Plan de Reprise d'Activité (PRA) - NOWTEAMS](#contrat-dinfogérance-et-plan-de-reprise-dactivité-pra---nowteams)
     - [Contrat de maintenance et Système de Sauvegarde Externalisé - wandesk](#contrat-de-maintenance-et-système-de-sauvegarde-externalisé---wandesk)
@@ -380,15 +381,182 @@ https://srv-dbn-02.abstergo.internal:9443       <--(Attention à ne pas omettre 
 ```
 
 ## Serveur Active Directory
+### Administration
+```powershell
+function Remove-Diacritics {
+param ([String]$src = [String]::Empty)
+  $normalized = $src.Normalize( [Text.NormalizationForm]::FormD )
+  $sb = new-object Text.StringBuilder
+  $normalized.ToCharArray() | % { 
+    if( [Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne [Globalization.UnicodeCategory]::NonSpacingMark) {
+      [void]$sb.Append($_)
+    }
+  }
+  $sb.ToString()
+}
 
-## Serveur DNS
+$_file = "./Downloads/ABSTERGO_AD_DUMPFILE.csv"
+$_content = Import-Csv -Path $_file -Delimiter ";" -Encoding UTF8
 
 
-## Administration
+ForEach ($User in $_content) {
+    $username = "$(Remove-Diacritics($User.nom.ToLower())).$(Remove-Diacritics($User.prenom.ToLower()))"
+    $password = "ABSTERGO.2023/$(Remove-Diacritics($user.nom.ToLower())[0])$(Remove-Diacritics($user.prenom.ToLower())[0])"
+    $firstname = $User.prenom
+    $lastname = $User.nom
+    $__OU = "$($User.ou)"
+    $__DOMAIN = "DC=abstergo,DC=internal"
+    $__PATH = "$($__OU),$($__DOMAIN)"
+
+    $_ous = ($__OU -split "," | Where-Object {$_ -match '^OU=(.+)'}); [Array]::Reverse($_ous)
+    $_ous_tree = $null
+    ForEach ($ou in $_ous) {
+        $_tmp = "$($ou),$($_ous_tree)$($DOMAIN)"
+        if (-not (Get-ADOrganizationalUnit -Filter {DistinguishedName -eq $_tmp}))  {
+            New-ADOrganizationalUnit -Name "$(($ou -split 'OU=')[1])" `
+                -Path "$($_ous_tree)$($DOMAIN)" `
+                -ProtectedFromAccidentalDeletion $false `
+        }
+
+        $_ous_tree = "$($ou),$($_ous_tree)"
+    }
+
+    $_tmp = "CN=$firstname $lastname,$__PATH"
+    if (-not (Get-ADUser -Filter {DistinguishedName -eq $_tmp})) {
+        Write-Host "Creating user $firstname $lastname... (at $_tmp)"
+
+        New-ADUser `
+            -Name "$firstname $lastname" `
+            -GivenName $firstname `
+            -Surname $lastname `
+            -DisplayName "$firstname $lastname" `
+            -SamAccountName $username `
+            -UserPrincipalName "$username@abstergo.internal" `
+            -Path $__PATH `
+            -AccountPassword (ConvertTo-secureString $password -AsPlainText -Force) `
+            -ChangePasswordAtLogon $true `
+            -CannotChangePassword $false `
+            -PasswordNeverExpires $false `
+            -Enabled $true
+    }
+}
+```
+
+```powershell
+#
+# Déploiement d'un AD DS primaire
+#
+
+Import-Module ADDSDeployment
+Install-ADDSForest `
+    -CreateDnsDelegation:$false `
+    -DatabasePath "C:\Windows\NTDS" `
+    -DomainMode "WinThreshold" `
+    -DomainName "abstergo.internal" `
+    -DomainNetbiosName "abstergo" `
+    -ForestMode "WinThreshold" `
+    -InstallDns:$true `
+    -LogPath "C:\Windows\NTDS" `
+    -NoRebootOnCompletion:$false `
+    -SysvolPath "C:\Windows\SYSVOL" `
+    -Force:$true
+```
+
+```powershell
+#
+# Déploiement d'un AD DS secondaire et le faire rejoindre un
+# domaine existante.
+#
+
+Import-Module ADDSDeployment
+Install-ADDSDomainController `
+    -NoGlobalCatalog:$false `
+    -CreateDnsDelegation:$false `
+    -Credential (Get-Credential) `
+    -CriticalReplicationOnly:$false `
+    -DatabasePath "C:\Windows\NTDS" `
+    -DomainName "abstergo.internal" `
+    -InstallDns:$true `
+    -LogPath "C:\Windows\NTDS" `
+    -NoRebootOnCompletion:$false `
+    -ReplicationSourceDC "srv-win-01.abstergo.internal" `
+    -SiteName "Default-First-Site-Name" `
+    -SysvolPath "C:\Windows\SYSVOL" `
+    -Force:$true
+```
+
+```powershell
+#
+# Rejoindre un domaine existant, depuis un appareil Windows 
+#
+Add-Computer –domainname "abstergo.internal".local -Credential "abdstergo.internal\Administrator" -restart –force
+```
+
 ### Management
-#### Scripts
+```powershell
+#
+# Lister l'ensemble des ordinateurs du domaine et de récupérer 
+# leur nom et adresse IP
+#
+Get-ADComputer -Filter * -Properties * | Select-Object Name, IPv4Address
+```
 
-### Productions de Rapports (Reporting)
+```powershell
+#
+# Liste les enregistrements statiques A dans la zone 
+# 'abstergo.internal' du serveur DNS.
+#
+Get-DnsServerResourceRecord -ZoneName abstergo.internal -RRType A |
+Where-Object { !$_.Timestamp }
+```
+
+```powershell
+#
+# Permets de lister l'ensemble des utilisateurs du domaine et 
+# de récupérer leur OU, leur nom, leur login et l'état du 
+# compte (activé ou non)
+#
+Get-ADUser -Filter * -Properties DistinguishedName |
+Select-Object @{Name="Unité d'Organisation"; Expression={($_.DistinguishedName -split ",OU=")[1]}}, @{Name="Name"; Expression={$_.Name}}, @{Name="UserPrincipalName"; Expression={$_.UserPrincipalName}}, @{Name="Enabled"; Expression={$_.Enabled}} |
+Sort-Object "Unité d'Organisation"
+```
+
+```powershell
+#
+# Liste toutes les adresses IPv4 des ordinateurs dans les 
+# réseaux :
+# - 192.168.25.0    /24     (LAN ABSTERGO - Site du Siège Social)   
+# - 192.168.50.0    /24     (DMZ ABSTERGO - Site du Siège Social)   
+# - 192.168.75.0    /24     (LAN ABSTERGO - Site de Lyon)   
+# - 192.168.100.0   /24     (DMZ ABSTERGO - Site de Lyon)
+#
+$tasks = @();
+$IPv4s = @("25", "50", "75", "100") | ForEach-Object { $suffix = $_; 0..255 | ForEach-Object { "192.168.$suffix.$_" } };
+ForEach ($address in $IPv4s) {
+    Write-Progress -Activity "Network Scanning..." -Status "Sending ICMP packet to host: $address" -PercentComplete (($IPv4s.IndexOf($address) + 1) / $IPv4s.Count * 100)
+    $tasks += Test-Connection -ComputerName $address -Count 1 -Asjob -ErrorAction SilentlyContinue
+}
+
+$tasks | ForEach-Object { $result = Receive-Job -Job $_ -Wait; if ($result.StatusCode -eq 0) { $result.Address } }
+```
+
+### Réplication
+
+## Serveur de Résolution de Nom (DNS)
+Ci-dessous, vous trouverez un aperçu des enregistrements DNS actuellement gérés par notre DNS local du domaine, avec des informations telles que l'adresse IP associée, le type d'enregistrement, et les horodatages pour les mises à jour les plus récentes.
+
+**⚠️ Important: Veuillez tenir compte, que les serveurs DNS locaux de l'entreprise sont des services membres de l'Active Directory. Sachant que l'Active Directory suit une politque de réplication, alors les entrées DNS seront elles aussi répliqués sur l'ensemble du réseau.**
+
+
+| Nom | Type | Données | Horodateur |
+|-----|------|---------|------------|
+| srv-dbn-01 | Hôte (A) | 192.168.25.5 | statique |
+| srv-win-01 | Hôte (A) | 192.168.25.2 | statique |
+| srv-win-02 | Hôte (A) | 192.168.25.3 | statique |
+| srv-win-03 | Hôte (A) | 192.168.75.2 | statique |
+| win-10-001 | Hôte (A) | 192.168.25.129 | 07/11/2023 11:00:00 |
+| win-10-001 | Hôte (A) | 192.168.75.152 | 07/11/2023 13:00:00 |
+
 
 
 # Prestataires et Services Externalisés
